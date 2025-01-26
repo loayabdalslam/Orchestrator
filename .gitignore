@@ -1,3 +1,4 @@
 .env
 migrations
 logs.json
+db_config.json
