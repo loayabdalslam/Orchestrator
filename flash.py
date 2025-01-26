@@ -52,7 +52,11 @@ class Logger:
         color = self.COLORS.get(level, Fore.WHITE)
         log_entry = f"[{timestamp}] [{level.value}] {self.agent_name}: {message}"
         print(f"{color}{log_entry}{Style.RESET_ALL}")
-        self.db.insert({'timestamp': timestamp, 'level': level.value, 'message': message})
+        
+        # Check for duplicate entries before inserting
+        existing_entry = self.db.search(Query().message == message)
+        if not existing_entry:
+            self.db.insert({'timestamp': timestamp, 'level': level.value, 'message': message})
 
     def log_code_change(self, old_code: str, new_code: str, filename: str):
         """Log code changes in GitHub-style diff format"""
@@ -274,11 +278,13 @@ class ProjectManager(BaseAgent):
             sanitized = raw_name.split('\n')[0].split(':')[-1].strip()
             sanitized = sanitized.replace(' ', '_').replace('-', '_')[:30]
             sanitized = sanitized.strip('_')  # إزالة الشرطات الطرفية
+            
+            # Ensure the name is not empty
             if not sanitized:
                 raise ValueError("Empty project name generated")
             
             return sanitized
-            
+                
         except Exception as e:
             self.logger.log(f"Name generation failed, using fallback name: {str(e)}", LogLevel.WARNING)
             return self._generate_fallback_name(user_request)

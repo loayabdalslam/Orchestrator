@@ -1,0 +1,5 @@
+{
+  "database": "project_db.json",
+  "last_migration": "0000_initial",
+  "migrations": []
+}
